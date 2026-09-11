@@ -1,0 +1,6 @@
+{
+  "name": "Máy Đẻ 1000 Milestone Ở Trọ Sài Gòn",
+  "description": "Hệ thống máy đẻ 1000 milestone 10 phút tự động cho người ở trọ Sài Gòn với bản đồ sao, gacha bốc vé dopamine và bảng nhật ký 4 cột.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

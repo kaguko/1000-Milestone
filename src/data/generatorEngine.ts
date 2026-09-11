@@ -396,6 +396,282 @@ const DOMAIN_TEMPLATES: Record<number, {
   }
 };
 
+// Determine realistic cost for living in Saigon rentals
+function calculateCost(safeId: number, domainId: number): '0đ' | '20k' | '50k' {
+  if (domainId === 2) {
+    // Ăn uống
+    if (safeId % 10 === 0) return '50k'; // bữa tươm tất
+    if (safeId % 3 === 0) return '0đ'; // nấu có sẵn, nhai kỹ
+    return '20k'; // nước mía, bánh mì, quà vặt
+  }
+  if (domainId === 5) {
+    // Tiền bạc
+    if (safeId % 10 === 0) return '50k';
+    if (safeId % 4 === 0) return '20k';
+    return '0đ';
+  }
+  if (domainId === 8) {
+    // Chơi giải trí
+    if (safeId % 10 === 0) return '50k';
+    if (safeId % 3 === 0) return '20k';
+    return '0đ';
+  }
+  // Các lĩnh vực khác chủ yếu 0đ (tập luyện, dọn trọ, đọc sách, đi bộ, quan sát...)
+  if (safeId % 15 === 0) return '50k';
+  if (safeId % 5 === 0) return '20k';
+  return '0đ';
+}
+
+// Determine if milestone connects with humans to combat loneliness
+function calculateHasPeople(safeId: number, domainId: number, text: string): boolean {
+  if (domainId === 3) return true; // Lĩnh vực Người
+  const lower = text.toLowerCase();
+  const peopleKeywords = ['cô', 'chú', 'bạn', 'người', 'bác', 'khách', 'hàng xóm', 'chủ quán', 'ai đó'];
+  if (peopleKeywords.some(kw => lower.includes(kw))) return true;
+  return safeId % 8 === 0;
+}
+
+// 10 Lợi ích NGAY trong 10 phút tới (Đánh thẳng vào 3 câu hỏi não bộ chạy trong 2 giây)
+const DOMAIN_IMMEDIATE_BENEFITS: Record<number, string[]> = {
+  1: [ // Đi lại / Khám phá
+    '1 chỗ hóng gió mát rượi + 0đ chi phí + xả sạch cơn ngột ngạt sau 8 tiếng giam mình trong trọ',
+    'Khám phá 1 góc hẻm mới lạ + hết nhức mắt vì màn hình + tối ngủ thấy mình đã thật sự sống ở SG',
+    '1 tấm ảnh ánh sáng hoàng hôn + không cần mục đích to tát + não được tha bổng khỏi cảm giác tội lỗi',
+    'Nhìn ngắm nhịp sống phố phường + 10 phút tự do tuyệt đối + cắt đứt dòng suy nghĩ lo âu luẩn quẩn'
+  ],
+  2: [ // Ăn uống
+    '1 món ấm bụng ngon lành chỉ 10-20k + cắt đứt cơn thèm đặt đồ ăn tốn kém + nạp năng lượng tức thì',
+    'Vị ngon giòn ngọt đánh thức vị giác + 10 phút tận hưởng không bấm điện thoại + hết mệt mỏi thể chất',
+    '1 ly nước thảo mộc thanh mát + tiết kiệm 40k tiền trà sữa + cơ thể nhẹ nhõm sảng khoái liền',
+    'Bữa ăn tươm tất tự tay chăm sóc + cảm giác tự hào bản thân + tối đi ngủ với chiếc bụng ấm êm'
+  ],
+  3: [ // Người / Xã hội
+    '1 lời chào ấm áp + nhận lại 1 nụ cười chân thành + xóa tan cảm giác cô độc giữa 10 triệu người SG',
+    '1 mẩu chuyện nhỏ 2 phút với người lao động + nhận ra ai cũng đang cố gắng + thấy lòng nhẹ nhõm hơn',
+    '1 tin nhắn kết nối bạn bè / gia đình + nối lại sợi dây tình cảm + bớt đi nỗi sợ bị quên lãng',
+    'Cảm giác được lắng nghe và thấu hiểu + 0đ tốn kém + thấy mình có liên quan đến thế giới xung quanh'
+  ],
+  4: [ // Học
+    'Hiểu tường tận 1 khái niệm cốt lõi + 1 dòng ghi chú hữu ích + cảm giác mình đang tiến lên mỗi ngày',
+    'Xóa bỏ cảm giác bất an vì sợ bị tụt hậu + 10 phút tập trung cao độ + não bộ được kích hoạt hưng phấn',
+    'Học xong 1 mẹo thực chiến dùng được ngay + tăng tự tin vào năng lực + tối ngủ không còn cắn rứt'
+  ],
+  5: [ // Tiền
+    'Biết chính xác số dư và tiền trọ tháng này + dập tắt nỗi sợ mơ hồ về tài chính + tâm trí vững vàng',
+    'Tiết kiệm được 30-50k chi tiêu bốc đồng + làm chủ chiếc ví + cảm giác nắm quyền kiểm soát cuộc sống',
+    '1 con số cụ thể rõ ràng + cắt đứt ảo giác thiếu thốn + lập kế hoạch sống sót an toàn tại Sài Gòn'
+  ],
+  6: [ // Sức khỏe
+    'Máu lưu thông lên não + lồng ngực nở rộng hít thở sâu + xả sạch cơn mỏi vai gáy của dân phòng trọ',
+    'Cơ thể nóng lên nhẹ nhàng + tuyến mồ hôi đào thải độc tố + tinh thần tỉnh táo bừng tỉnh tức thì',
+    'Uống đủ nước cho từng tế bào + mắt dịu mát + cảm giác biết ơn vì cơ thể vẫn đang khỏe mạnh'
+  ],
+  7: [ // Ở / Không gian
+    'Căn phòng 15m² sáng sủa thơm tho + sướng mắt tức thì + bước vào phòng không còn ngột ngạt bực bội',
+    'Giường chiếu phẳng phiu thơm phức + tạo tiền đề cho giấc ngủ sâu đêm nay + tự hào về tổ ấm nhỏ',
+    'Vứt đi 3 món rác bừa bộn + não bộ tự động giảm 50% mức độ căng thẳng do bừa bãi gây ra'
+  ],
+  8: [ // Chơi / Giải trí
+    '10 phút đắm chìm trong giai điệu đẹp + 0đ tốn kém + tâm hồn được tưới mát sau chuỗi ngày cày cuốc',
+    '1 nụ cười nhẹ bẫng bên bờ kè + hít căng lồng ngực làn gió sông + tái tạo dopamine lành mạnh không độc hại',
+    'Bắt trọn 1 khoảnh khắc bình yên của SG + lưu giữ ký ức tuổi trẻ + tối ngả lưng thấy lòng thanh thản'
+  ],
+  9: [ // Làm
+    '1 dòng CV sắc sảo hơn / 1 việc rõ ràng cho ngày mai + xóa tan cảm giác hoang mang nghề nghiệp',
+    'Hòm thư Gmail sạch bóng rác + màn hình desktop tinh gọn + giải phóng dung lượng cho tâm trí',
+    'Bước đầu tiên khởi động cỗ máy hành động + phá vỡ quán tính ì trệ + cảm giác tự tin lấy lại quyền kiểm soát'
+  ],
+  10: [ // Ghi / Chiêm nghiệm
+    'Trút hết ấm ức và mông lung ra trang giấy + tha thứ cho chính mình + đặt gánh nặng tâm lý xuống',
+    'Ghi nhận 3 điều tốt đẹp đã diễn ra hôm nay + ngập tràn lòng biết ơn + tối ngủ với tâm thế bình an'
+  ]
+};
+
+// 30% Vé Kép (Dual-Purpose Tickets) - Vừa đi chơi vừa là học / làm luôn
+export function calculateIsDualTicket(safeId: number, domainId: number): boolean {
+  // Domain 4 (Học) & Domain 9 (Làm) là vé kép chuyên sâu
+  if (domainId === 4 || domainId === 9) return true;
+  // Domain 5 (Tiền) có 50% vé kép tài chính
+  if (domainId === 5 && safeId % 2 === 0) return true;
+  // Các lĩnh vực khác có ~20% vé kép lồng ghép
+  return safeId % 5 === 0;
+}
+
+const DUAL_TICKET_NOTES: Record<number, string[]> = {
+  1: [
+    'Vé kép tư duy: Đi dạo 10 phút để não chuyển sang chế độ Diffuse Mode (tư duy phân tán), gỡ rối vấn đề học/làm đang bí',
+    'Vé kép nghiên cứu: Quan sát mặt bằng kinh doanh hoặc luồng giao thông trên đường để nhạy bén hơn với thị trường thực tế'
+  ],
+  2: [
+    'Vé kép nghiệp vụ: Ăn món mới hoặc ghé quán vỉa hè để quan sát cách người ta phục vụ và quản lý giá vốn',
+    'Vé kép dinh dưỡng: Tự chăm sóc bữa ăn để duy trì năng lượng bền vững cho 4 tiếng làm việc buổi tối'
+  ],
+  3: [
+    'Vé kép quan hệ: Giao tiếp ngắn 2 phút với người lạ để rèn luyện sự dạn dĩ, chuẩn bị cho phỏng vấn và mở rộng networking',
+    'Vé kép mạng lưới: Nhắn 1 tin hỏi thăm người quen cũ để duy trì mối quan hệ công việc tự nhiên mà không thấy ngượng'
+  ],
+  4: [
+    'Vé kép học: Ra hiệu sách 10 phút chỉ đọc tựa sách về ngành bạn đang học / ghi chú 1 khái niệm mới',
+    'Vé kép nâng cấp: Đọc 1 bài báo chuyên ngành hoặc xem tóm tắt 1 case study thực chiến dùng được ngay'
+  ],
+  5: [
+    'Vé kép tài chính: Kiểm tra số dư và lập ngân sách 1 tuần để làm chủ chiếc ví, không bị nỗi sợ thiếu tiền đè bẹp việc học',
+    'Vé kép tối ưu: Phân tích 1 khoản chi tiêu lãng phí và lập kế hoạch sinh tồn an toàn tại Sài Gòn'
+  ],
+  6: [
+    'Vé kép năng lượng: Xả cơ vai gáy và tập thở để nạp lại oxy cho não bộ, giúp 90 phút học tiếp theo tăng gấp đôi năng suất',
+    'Vé kép sức bền: Vận động nhẹ 10 phút để đánh thức sự tỉnh táo mà không cần lạm dụng cà phê'
+  ],
+  7: [
+    'Vé kép không gian: Dọn sạch bàn học và quẳng 3 thứ rác để tăng 50% khả năng tập trung cho block giờ sâu',
+    'Vé kép tổ ấm: Sắp xếp góc ngồi làm việc ngăn nắp, tạo cảm hứng hành động mỗi khi ngồi vào bàn'
+  ],
+  8: [
+    'Vé kép tái tạo: Thư giãn 10 phút không màn hình để hồi phục thụ thể dopamine cho não bộ',
+    'Vé kép cảm hứng: Chụp 1 góc phố đẹp làm tư liệu hình ảnh và lưu giữ cảm xúc tươi mới'
+  ],
+  9: [
+    'Vé kép làm: Ra quán cà phê ngồi 10 phút nghe xem người ta nói gì về công việc bạn đang làm',
+    'Vé kép sự nghiệp: Viết lại 1 dòng thành tựu cho CV / cập nhật 1 kỹ năng mới lên hồ sơ nghề nghiệp'
+  ],
+  10: [
+    'Vé kép chiêm nghiệm: Viết 3 dòng đúc kết bài học làm việc hôm nay để không bao giờ lặp lại sai lầm',
+    'Vé kép định hướng: Ghi lại 1 việc ưu tiên duy nhất cho ngày mai để sáng dậy vào guồng ngay lập tức'
+  ]
+};
+
+export function calculateDualTicketNote(safeId: number, domainId: number): string {
+  const notes = DUAL_TICKET_NOTES[domainId] || DUAL_TICKET_NOTES[4];
+  return notes[safeId % notes.length];
+}
+
+// 3 Khe Hở (Edge Slots): Cứu giờ rìa, bảo vệ tuyệt đối giờ học sâu
+// Khe 1: Vừa học / làm xong 1 block 90 phút, não đang đơ (xả đơ não)
+// Khe 2: Lúc đang lo cho tương lai mà không học nổi, ngồi trong trọ thấy ngộp (cắt cơn hoảng loạn)
+// Khe 3: Buổi tối sau 8h, lúc mà dù không đi thì cũng lướt TikTok 1 tiếng (thay thế giờ lướt vô thức)
+export function calculateSlotRecommendation(safeId: number, domainId: number): 'khe1' | 'khe2' | 'khe3' {
+  if (domainId === 6 || domainId === 1 || domainId === 2) {
+    return (safeId % 2 === 0) ? 'khe1' : 'khe3';
+  }
+  if (domainId === 7 || domainId === 10 || domainId === 5) {
+    return (safeId % 2 === 0) ? 'khe2' : 'khe3';
+  }
+  const slots: ('khe1' | 'khe2' | 'khe3')[] = ['khe1', 'khe2', 'khe3'];
+  return slots[safeId % 3];
+}
+
+// Emergency Brake Tickets - 0đ, zero guilt rest
+export const BRAKE_TICKETS: Omit<Milestone, 'id'>[] = [
+  {
+    domainId: 7,
+    ticketTypeId: '7.0',
+    ticketTypeName: 'Vé Phanh Khẩn Cấp',
+    action: 'Nằm ngửa trên sàn mát, nhắm mắt và thở sâu 10 phút không làm gì',
+    location: 'Sàn gạch hoặc nệm êm trong phòng trọ',
+    reward: 'Bộ não được xả sạch áp lực, không còn chút tội lỗi nào vì được quyền nghỉ',
+    immediateBenefit: 'Não được xả sạch áp lực tức thì + 0đ hao tốn + hết cảm giác tội lỗi vì được quyền nghỉ',
+    title: '[Nằm ngửa trên sàn mát, nhắm mắt và thở sâu 10 phút không làm gì] + [Sàn gạch hoặc nệm êm trong phòng trọ] + [Bộ não được xả sạch áp lực, không còn chút tội lỗi nào vì được quyền nghỉ]',
+    cost: '0đ',
+    hasPeople: false,
+    slotRecommendation: 'khe2',
+    isBrake: true
+  },
+  {
+    domainId: 7,
+    ticketTypeId: '7.0',
+    ticketTypeName: 'Vé Phanh Khẩn Cấp',
+    action: 'Tựa lưng vào cửa sổ hoặc ban công, ngắm mây trời Sài Gòn trôi chậm',
+    location: 'Khung cửa sổ phòng trọ',
+    reward: 'Cảm nhận sự tĩnh lặng quý giá, cho phép bản thân tạm dừng cuộc đua xô bồ',
+    immediateBenefit: '1 góc mây trời bình yên + không tốn 1 xu + xả sạch cơn nhức đầu ngột ngạt',
+    title: '[Tựa lưng vào cửa sổ hoặc ban công, ngắm mây trời Sài Gòn trôi chậm] + [Khung cửa sổ phòng trọ] + [Cảm nhận sự tĩnh lặng quý giá, cho phép bản thân tạm dừng cuộc đua xô bồ]',
+    cost: '0đ',
+    hasPeople: false,
+    slotRecommendation: 'khe2',
+    isBrake: true
+  },
+  {
+    domainId: 7,
+    ticketTypeId: '7.0',
+    ticketTypeName: 'Vé Phanh Khẩn Cấp',
+    action: 'Pha một cốc nước ấm, nhắm mắt uống từng ngụm thật chậm rãi',
+    location: 'Góc bàn con trong phòng trọ',
+    reward: 'Cơn căng thẳng tan biến, nhịp tim chậm lại và cơ thể được thả lỏng hoàn toàn',
+    immediateBenefit: 'Lồng ngực và bao tử ấm áp dịu lại + nhịp tim hạ xuống + tâm trí tĩnh lặng',
+    title: '[Pha một cốc nước ấm, nhắm mắt uống từng ngụm thật chậm rãi] + [Góc bàn con trong phòng trọ] + [Cơn căng thẳng tan biến, nhịp tim chậm lại và cơ thể được thả lỏng hoàn toàn]',
+    cost: '0đ',
+    hasPeople: false,
+    slotRecommendation: 'khe2',
+    isBrake: true
+  },
+  {
+    domainId: 7,
+    ticketTypeId: '7.0',
+    ticketTypeName: 'Vé Phanh Khẩn Cấp',
+    action: 'Tắt toàn bộ màn hình điện thoại, máy tính và trùm chăn ấm 10 phút',
+    location: 'Chiếc giường đơn phòng trọ',
+    reward: 'Mắt hết nhức mỏi, lấy lại năng lượng gốc mà không cần phải cố gượng ép',
+    immediateBenefit: 'Mắt dịu mát tức thì + cắt đứt luồng thông tin độc hại + lấy lại 50% năng lượng gốc',
+    title: '[Tắt toàn bộ màn hình điện thoại, máy tính và trùm chăn ấm 10 phút] + [Chiếc giường đơn phòng trọ] + [Mắt hết nhức mỏi, lấy lại năng lượng gốc mà không cần phải cố gượng ép]',
+    cost: '0đ',
+    hasPeople: false,
+    slotRecommendation: 'khe2',
+    isBrake: true
+  }
+];
+
+export function getRandomBrakeTicket(): Milestone {
+  const template = BRAKE_TICKETS[Math.floor(Math.random() * BRAKE_TICKETS.length)];
+  return {
+    ...template,
+    id: 9999, // Special ID for brake
+    isCompleted: false
+  };
+}
+
+// Hệ thống dọn rác: Đẻ vé mới thay thế khi vé cũ bị chê chán
+export function mutateMilestone(oldMilestone: Milestone, mutationCounter = 1): Milestone {
+  const domainId = oldMilestone.domainId;
+  const template = DOMAIN_TEMPLATES[domainId] || DOMAIN_TEMPLATES[1];
+
+  // Pick spicy alternatives with offset
+  const seed = (oldMilestone.id * 17 + mutationCounter * 31);
+  const actionIdx = (seed + 2) % template.actions.length;
+  const locIdx = (seed + 5) % template.locations.length;
+  const rewardIdx = (seed + 9) % template.rewards.length;
+
+  const action = `[ĐÃ TIẾN HÓA] ${template.actions[actionIdx]}`;
+  const location = template.locations[locIdx];
+  const reward = template.rewards[rewardIdx];
+  const title = `[${action}] + [${location}] + [${reward}]`;
+
+  const benefitsList = DOMAIN_IMMEDIATE_BENEFITS[domainId] || DOMAIN_IMMEDIATE_BENEFITS[1];
+  const immediateBenefit = benefitsList[seed % benefitsList.length];
+
+  const cost = calculateCost(oldMilestone.id + mutationCounter * 7, domainId);
+  const hasPeople = calculateHasPeople(oldMilestone.id + mutationCounter, domainId, action + location);
+
+  const isDualTicket = calculateIsDualTicket(oldMilestone.id, domainId);
+  const dualTicketNote = isDualTicket ? calculateDualTicketNote(oldMilestone.id, domainId) : undefined;
+  const slotRecommendation = calculateSlotRecommendation(oldMilestone.id, domainId);
+
+  return {
+    ...oldMilestone,
+    action,
+    location,
+    reward,
+    immediateBenefit,
+    isDualTicket,
+    dualTicketNote,
+    slotRecommendation,
+    title,
+    originalTitle: oldMilestone.title,
+    cost,
+    hasPeople,
+    isMutated: true
+  };
+}
+
 // Deterministically generate a milestone for any ID from 1 to 1000
 export function getMilestoneById(id: number): Milestone {
   const safeId = Math.max(1, Math.min(1000, id));
@@ -430,6 +706,16 @@ export function getMilestoneById(id: number): Milestone {
   // Full title following strict formula: [Hành động 10 phút] + [Ở đâu] + [Thưởng biến đổi]
   const title = `[${action}] + [${location}] + [${reward}]`;
 
+  const benefitsList = DOMAIN_IMMEDIATE_BENEFITS[domainId] || DOMAIN_IMMEDIATE_BENEFITS[1];
+  const immediateBenefit = benefitsList[dopamineIndex % benefitsList.length];
+
+  const isDualTicket = calculateIsDualTicket(safeId, domainId);
+  const dualTicketNote = isDualTicket ? calculateDualTicketNote(safeId, domainId) : undefined;
+  const slotRecommendation = calculateSlotRecommendation(safeId, domainId);
+
+  const cost = calculateCost(safeId, domainId);
+  const hasPeople = calculateHasPeople(safeId, domainId, action + location + reward);
+
   return {
     id: safeId,
     domainId,
@@ -438,7 +724,13 @@ export function getMilestoneById(id: number): Milestone {
     action,
     location,
     reward,
+    immediateBenefit,
+    isDualTicket,
+    dualTicketNote,
+    slotRecommendation,
     title,
+    cost,
+    hasPeople,
     isCompleted: false
   };
 }

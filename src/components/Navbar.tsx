@@ -8,17 +8,23 @@ import {
   Volume2, 
   VolumeX, 
   Flame,
-  Star
+  Star,
+  ShieldAlert,
+  ShieldCheck,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { sounds } from '../utils/sound';
 
-export type TabType = 'gacha' | 'constellation' | 'explorer' | 'sheet';
+export type TabType = 'gacha' | 'schedule' | 'stability' | 'constellation' | 'explorer' | 'sheet';
 
 interface NavbarProps {
   activeTab: TabType;
   onSelectTab: (tab: TabType) => void;
   completedCount: number;
   onOpenWhy: () => void;
+  onOpenBrake: () => void;
+  onOpenMirror: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
 }
@@ -28,6 +34,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectTab,
   completedCount,
   onOpenWhy,
+  onOpenBrake,
+  onOpenMirror,
   soundEnabled,
   onToggleSound
 }) => {
@@ -54,15 +62,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-neutral-400 hidden sm:block">
-                Hệ thống 10 phút xóa sạch cảm giác mông lung
+                Hệ thống 5 bộ phận: Phanh • Tiền • Gương • Người • Rác
               </p>
             </div>
           </div>
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
+            {/* Phanh quick action */}
+            <button
+              onClick={onOpenBrake}
+              className="px-2.5 py-1.5 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Hôm nay mệt? Đạp phanh ở yên trong trọ 10 phút"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-teal-400" />
+              <span className="hidden sm:inline">Phanh (Xả)</span>
+            </button>
+
+            {/* Soi gương quick action */}
+            <button
+              onClick={onOpenMirror}
+              className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Soi Gương tìm ra pattern sau mỗi 20 vé"
+            >
+              <Compass className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Soi Gương</span>
+            </button>
+
             {/* Progress Badge */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs">
               <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               <span className="text-white font-mono font-bold">{completedCount}</span>
               <span className="text-neutral-500">/ 1000 đã sáng</span>
@@ -71,10 +99,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Why Modal Trigger */}
             <button
               onClick={onOpenWhy}
-              className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              <span>Đào 3 WHY</span>
+              <span>3 WHY</span>
             </button>
 
             {/* Sound Mute Toggle */}
@@ -103,6 +131,36 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Dices className="w-4 h-4" />
             <span>Bốc Vé Hôm Nay</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onSelectTab('schedule');
+              sounds.playTick();
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
+              activeTab === 'schedule'
+                ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20 font-bold'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-amber-500" />
+            <span>2 Giờ Sâu & 3 Khe Hở</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onSelectTab('stability');
+              sounds.playTick();
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
+              activeTab === 'stability'
+                ? 'bg-emerald-400 text-black shadow-md shadow-emerald-400/20 font-bold'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>5 Phanh & Test Tải</span>
           </button>
 
           <button

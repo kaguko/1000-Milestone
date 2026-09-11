@@ -1,13 +1,34 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, CheckCircle2, Heart, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
+import { 
+  X, 
+  CheckCircle2, 
+  Heart, 
+  ThumbsUp, 
+  ThumbsDown, 
+  Sparkles, 
+  Coins, 
+  Users, 
+  Zap,
+  BatteryCharging,
+  BatteryLow,
+  ShieldCheck,
+  ShieldAlert
+} from 'lucide-react';
 import { Milestone } from '../types';
 
 interface CompleteModalProps {
   milestone: Milestone | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: number, feeling: string, wantRedo: boolean) => void;
+  onSave: (
+    id: number, 
+    feeling: string, 
+    wantRedo: boolean, 
+    milestone?: Milestone,
+    energyEffect?: '+pin' | '-pin',
+    guiltFree?: boolean
+  ) => void;
 }
 
 const QUICK_FEELINGS = [
@@ -28,12 +49,21 @@ export const CompleteModal: React.FC<CompleteModalProps> = ({
 }) => {
   const [feeling, setFeeling] = useState('');
   const [wantRedo, setWantRedo] = useState<boolean>(true);
+  const [energyEffect, setEnergyEffect] = useState<'+pin' | '-pin'>('+pin');
+  const [guiltFree, setGuiltFree] = useState<boolean>(true);
 
   if (!isOpen || !milestone) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(milestone.id, feeling || 'Đã hoàn thành 10 phút!', wantRedo);
+    onSave(
+      milestone.id, 
+      feeling || 'Đã hoàn thành 10 phút!', 
+      wantRedo, 
+      milestone,
+      energyEffect,
+      guiltFree
+    );
     onClose();
   };
 
@@ -58,18 +88,43 @@ export const CompleteModal: React.FC<CompleteModalProps> = ({
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold">
-                MILESTONE #{milestone.id}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-semibold">
+                  MILESTONE #{milestone.id}
+                </span>
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 font-semibold">
+                  {milestone.cost || '0đ'}
+                </span>
+                {milestone.hasPeople && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-pink-500/20 text-pink-300 font-semibold flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    <span>Có người</span>
+                  </span>
+                )}
+              </div>
               <h3 className="text-lg font-bold text-white mt-1">
                 Ghi Cảm Giác Vào Nhật Ký 4 Cột
               </h3>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-neutral-300 mb-5">
-            <strong className="text-white block mb-1">Nhiệm vụ vừa làm:</strong>
-            {milestone.title}
+          <div className="p-3.5 rounded-2xl bg-neutral-950 border border-neutral-800 text-xs text-neutral-300 mb-5 space-y-1.5">
+            <div>
+              <strong className="text-white block mb-0.5">Nhiệm vụ vừa làm:</strong>
+              <span className="text-neutral-300 leading-relaxed">{milestone.title}</span>
+            </div>
+            {milestone.isDualTicket && (
+              <div className="p-2 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 font-medium leading-relaxed flex items-start gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                <span><strong>Vé Kép:</strong> {milestone.dualTicketNote || 'Vừa xả hơi vừa tiến bộ học/làm việc'}</span>
+              </div>
+            )}
+            {milestone.immediateBenefit && (
+              <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-medium leading-relaxed flex items-start gap-1.5">
+                <span>🎁</span>
+                <span><strong>Đã nhận được NGAY:</strong> {milestone.immediateBenefit}</span>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,7 +168,7 @@ export const CompleteModal: React.FC<CompleteModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setWantRedo(true)}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all ${
                     wantRedo === true
                       ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
                       : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
@@ -125,15 +180,89 @@ export const CompleteModal: React.FC<CompleteModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setWantRedo(false)}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-medium transition-all ${
                     wantRedo === false
                       ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
                       : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
                   }`}
                 >
                   <ThumbsDown className="w-4 h-4" />
-                  <span>Không (Trải nghiệm 1 lần là đủ)</span>
+                  <span>Không (Trải nghiệm 1 lần)</span>
                 </button>
+              </div>
+            </div>
+
+            {/* 5 PHANH KIỂM ĐỊNH: ĐO PIN & TỘI LỖI */}
+            <div className="p-3.5 rounded-2xl bg-neutral-950 border border-neutral-800/80 space-y-3">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span>Kiểm định 5 Đèn Ổn Định (Đo Năng Lượng & Tội Lỗi)</span>
+              </div>
+
+              {/* Pin Check (+pin / -pin) */}
+              <div>
+                <span className="text-xs text-neutral-300 font-medium block mb-1.5">
+                  1. Sau khi đi về, bạn thấy khỏe hơn hay mệt hơn lúc nằm trong trọ?
+                </span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setEnergyEffect('+pin')}
+                    className={`py-2 px-3 rounded-xl border text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      energyEffect === '+pin'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    }`}
+                  >
+                    <BatteryCharging className="w-4 h-4 text-emerald-400" />
+                    <span>🔋 +pin (Khỏe ra, nạp lại)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEnergyEffect('-pin')}
+                    className={`py-2 px-3 rounded-xl border text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      energyEffect === '-pin'
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    }`}
+                  >
+                    <BatteryLow className="w-4 h-4 text-rose-400" />
+                    <span>🪫 -pin (Mệt hơn, rút pin)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Guilt Check (Không / Có) */}
+              <div>
+                <span className="text-xs text-neutral-300 font-medium block mb-1.5">
+                  2. Đi vào khe hở này, bạn có thấy tội lỗi vì "đáng lẽ phải học" không?
+                </span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setGuiltFree(true)}
+                    className={`py-2 px-3 rounded-xl border text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      guiltFree === true
+                        ? 'bg-sky-500/20 border-sky-500 text-sky-300 font-bold'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    }`}
+                  >
+                    <ShieldCheck className="w-4 h-4 text-sky-400" />
+                    <span>🛡️ Không (Đúng khe rìa)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGuiltFree(false)}
+                    className={`py-2 px-3 rounded-xl border text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      guiltFree === false
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    }`}
+                  >
+                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                    <span>⚠️ Có (Lấn vào giờ sâu)</span>
+                  </button>
+                </div>
               </div>
             </div>
 

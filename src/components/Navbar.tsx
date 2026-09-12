@@ -12,7 +12,11 @@ import {
   ShieldAlert,
   ShieldCheck,
   Compass,
-  Clock
+  Clock,
+  Smile,
+  ToggleLeft,
+  ToggleRight,
+  ChevronDown
 } from 'lucide-react';
 import { sounds } from '../utils/sound';
 
@@ -27,6 +31,9 @@ interface NavbarProps {
   onOpenMirror: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  isSimpleMode?: boolean;
+  onToggleSimpleMode?: () => void;
+  onOpenBeginnerGuide?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,7 +44,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBrake,
   onOpenMirror,
   soundEnabled,
-  onToggleSound
+  onToggleSound,
+  isSimpleMode = false,
+  onToggleSimpleMode,
+  onOpenBeginnerGuide
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-neutral-950/85 backdrop-blur-md border-b border-neutral-800">
@@ -69,6 +79,34 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right controls */}
           <div className="flex items-center gap-2">
+            {/* Beginner Guide Button - Prominent for non-tech users */}
+            {onOpenBeginnerGuide && (
+              <button
+                onClick={onOpenBeginnerGuide}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20"
+                title="Hướng dẫn siêu dễ cho người không rành công nghệ"
+              >
+                <Smile className="w-4 h-4" />
+                <span>Cách Dùng Siêu Dễ</span>
+              </button>
+            )}
+
+            {/* Simple Mode Toggle */}
+            {onToggleSimpleMode && (
+              <button
+                onClick={onToggleSimpleMode}
+                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                  isSimpleMode
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                    : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                }`}
+                title={isSimpleMode ? 'Chế độ siêu dễ đang bật' : 'Bật chế độ siêu dễ để ẩn bớt nút'}
+              >
+                {isSimpleMode ? <ToggleRight className="w-4 h-4 text-emerald-400" /> : <ToggleLeft className="w-4 h-4 text-neutral-500" />}
+                <span>{isSimpleMode ? 'Tối Giản' : 'Đầy Đủ'}</span>
+              </button>
+            )}
+
             {/* Phanh quick action */}
             <button
               onClick={onOpenBrake}
@@ -80,14 +118,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Soi gương quick action */}
-            <button
-              onClick={onOpenMirror}
-              className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              title="Soi Gương tìm ra pattern sau mỗi 20 vé"
-            >
-              <Compass className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="hidden sm:inline">Soi Gương</span>
-            </button>
+            {!isSimpleMode && (
+              <button
+                onClick={onOpenMirror}
+                className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                title="Soi Gương tìm ra pattern sau mỗi 20 vé"
+              >
+                <Compass className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="hidden sm:inline">Soi Gương</span>
+              </button>
+            )}
 
             {/* Progress Badge */}
             <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs">
@@ -100,9 +140,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenWhy}
               className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Triết lý 1000 vé"
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              <span>3 WHY</span>
+              <span className="hidden sm:inline">3 WHY</span>
             </button>
 
             {/* Sound Mute Toggle */}
@@ -125,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
               activeTab === 'gacha'
-                ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+                ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20 font-bold'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
@@ -135,17 +176,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => {
-              onSelectTab('schedule');
+              onSelectTab('sheet');
               sounds.playTick();
             }}
             className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-              activeTab === 'schedule'
-                ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20 font-bold'
+              activeTab === 'sheet'
+                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20 font-bold'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
-            <Clock className="w-4 h-4 text-amber-500" />
-            <span>2 Giờ Sâu & 3 Khe Hở</span>
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Sổ Đời (Đã Làm)</span>
           </button>
 
           <button
@@ -155,60 +196,74 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
               activeTab === 'stability'
-                ? 'bg-emerald-400 text-black shadow-md shadow-emerald-400/20 font-bold'
+                ? 'bg-teal-400 text-black shadow-md shadow-teal-400/20 font-bold'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>5 Phanh & Test Tải</span>
+            <ShieldCheck className="w-4 h-4 text-teal-400" />
+            <span>5 Phanh An Toàn</span>
           </button>
 
-          <button
-            onClick={() => {
-              onSelectTab('constellation');
-              sounds.playTick();
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-              activeTab === 'constellation'
-                ? 'bg-white text-black shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Bản Đồ Sao (1000)</span>
-          </button>
+          {!isSimpleMode && (
+            <>
+              <button
+                onClick={() => {
+                  onSelectTab('schedule');
+                  sounds.playTick();
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
+                  activeTab === 'schedule'
+                    ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20 font-bold'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+                }`}
+              >
+                <Clock className="w-4 h-4 text-amber-500" />
+                <span>2 Giờ Sâu & 3 Khe Hở</span>
+              </button>
 
-          <button
-            onClick={() => {
-              onSelectTab('explorer');
-              sounds.playTick();
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-              activeTab === 'explorer'
-                ? 'bg-sky-500 text-black shadow-md shadow-sky-500/20'
-                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Máy Đẻ 100 Vé</span>
-          </button>
+              <button
+                onClick={() => {
+                  onSelectTab('constellation');
+                  sounds.playTick();
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
+                  activeTab === 'constellation'
+                    ? 'bg-white text-black shadow-md font-bold'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Bản Đồ Sao (1000)</span>
+              </button>
 
-          <button
-            onClick={() => {
-              onSelectTab('sheet');
-              sounds.playTick();
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
-              activeTab === 'sheet'
-                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
-                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
-            }`}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Bảng 4 Cột Kiểu Sheet</span>
-          </button>
+              <button
+                onClick={() => {
+                  onSelectTab('explorer');
+                  sounds.playTick();
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all ${
+                  activeTab === 'explorer'
+                    ? 'bg-sky-500 text-black shadow-md shadow-sky-500/20 font-bold'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>Máy Đẻ 100 Vé</span>
+              </button>
+            </>
+          )}
+
+          {isSimpleMode && onToggleSimpleMode && (
+            <button
+              onClick={onToggleSimpleMode}
+              className="px-3 py-2 rounded-xl text-xs font-semibold text-neutral-400 hover:text-white bg-neutral-900/60 hover:bg-neutral-800 border border-neutral-800 flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <span>+ Mở Thêm Tính Năng Nâng Cao</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
   );
 };
+

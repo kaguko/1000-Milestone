@@ -47,6 +47,8 @@ interface DailyGachaProps {
   onNavigateToStability?: () => void;
   extremeFilter?: 'normal' | 'exam' | 'no_money' | 'rain';
   onSetExtremeFilter?: (f: 'normal' | 'exam' | 'no_money' | 'rain') => void;
+  isSimpleMode?: boolean;
+  onOpenBeginnerGuide?: () => void;
 }
 
 export const DailyGacha: React.FC<DailyGachaProps> = ({
@@ -60,7 +62,9 @@ export const DailyGacha: React.FC<DailyGachaProps> = ({
   onNavigateToSchedule,
   onNavigateToStability,
   extremeFilter = 'normal',
-  onSetExtremeFilter
+  onSetExtremeFilter,
+  isSimpleMode = false,
+  onOpenBeginnerGuide
 }) => {
   const [isRolling, setIsRolling] = useState(false);
   const [rollingNumber, setRollingNumber] = useState<number>(currentMilestone?.id || 1);
@@ -385,6 +389,37 @@ export const DailyGacha: React.FC<DailyGachaProps> = ({
         </div>
       )}
 
+      {/* Beginner Welcome Banner: Foolproof & Clear */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-amber-500 text-black flex items-center justify-center font-black text-lg shrink-0 shadow-md shadow-amber-500/30">
+            1-2-3
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-black text-white">
+                Dành cho bạn mới hoặc không rành công nghệ:
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                Chỉ cần 3 bước mộc mạc
+              </span>
+            </div>
+            <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+              <strong>Bước 1:</strong> Bấm nút cam <em>[BỐC VÉ 10 PHÚT]</em> &rarr; <strong>Bước 2:</strong> Cất điện thoại, đi làm việc đó 10 phút ngoài đời &rarr; <strong>Bước 3:</strong> Về bấm nút xanh <em>[ĐÃ LÀM XONG]</em>. (Nếu hôm nay mệt quá thì bấm <em>[Phanh Xả]</em> nghỉ ngơi).
+            </p>
+          </div>
+        </div>
+
+        {onOpenBeginnerGuide && (
+          <button
+            onClick={onOpenBeginnerGuide}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors shadow-md shadow-amber-500/20 cursor-pointer"
+          >
+            <span>👉 Xem hướng dẫn 30s</span>
+          </button>
+        )}
+      </div>
+
       {/* Mindset Banner */}
       <div className="px-4 py-2.5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 flex items-center justify-between text-xs text-neutral-400">
         <span className="italic">
@@ -396,37 +431,39 @@ export const DailyGacha: React.FC<DailyGachaProps> = ({
       </div>
 
       {/* 90-10 Rule & Energy Status Banner */}
-      <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-white uppercase tracking-wide">
-                Luật 90-10: 9 Đồng Cho Học/Làm — 1 Đồng Cho Vé
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Đã dùng {todayCompletedCount}/2 vé hôm nay
-              </span>
+      {!isSimpleMode && (
+        <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <ShieldCheck className="w-5 h-5" />
             </div>
-            <p className="text-[11px] text-neutral-400 mt-0.5">
-              1 ngày tối đa 2 vé (20 phút) nhét vào 3 khe hở. Không bao giờ làm trễ giờ học sâu.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wide">
+                  Luật 90-10: 9 Đồng Cho Học/Làm — 1 Đồng Cho Vé
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Đã dùng {todayCompletedCount}/2 vé hôm nay
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                1 ngày tối đa 2 vé (20 phút) nhét vào 3 khe hở. Không bao giờ làm trễ giờ học sâu.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {onNavigateToSchedule && (
-          <button
-            onClick={onNavigateToSchedule}
-            className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-colors shrink-0"
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Phân Bổ 3 Khe Hở</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
-        )}
-      </div>
+          {onNavigateToSchedule && (
+            <button
+              onClick={onNavigateToSchedule}
+              className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-colors shrink-0"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Phân Bổ 3 Khe Hở</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Top Banner / The Machine Card */}
       <div className="relative overflow-hidden rounded-3xl bg-neutral-900/90 border border-neutral-800 p-6 sm:p-8 backdrop-blur shadow-2xl">
@@ -440,13 +477,15 @@ export const DailyGacha: React.FC<DailyGachaProps> = ({
           <div className="space-y-3 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Hàm =RANDBETWEEN(1, 1000)</span>
+              <span>{isSimpleMode ? 'Hũ Bốc Thăm May Mắn 10 Phút' : 'Hàm =RANDBETWEEN(1, 1000)'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Bốc Vé Dopamine Hôm Nay
+              {isSimpleMode ? 'Rút Thăm Việc Nhỏ Hôm Nay' : 'Bốc Vé Dopamine Hôm Nay'}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-400 max-w-md leading-relaxed">
-              Luật bất di bất dịch: Bốc trúng vé nào làm nấy trong 10 phút. Não không cần phân vân, không sợ phí tiền vì có bộ lọc ngân sách!
+              {isSimpleMode 
+                ? 'Bấm nút bốc vé bên cạnh. Máy chọn việc gì làm nấy đúng 10 phút. Không thích thì bấm bốc lại!' 
+                : 'Luật bất di bất dịch: Bốc trúng vé nào làm nấy trong 10 phút. Não không cần phân vân, không sợ phí tiền vì có bộ lọc ngân sách!'}
             </p>
 
             {/* Budget & People Filter bar */}

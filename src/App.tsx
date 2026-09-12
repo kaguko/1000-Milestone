@@ -11,6 +11,7 @@ import { MirrorModal } from './components/MirrorModal';
 import { AIGeneratorModal } from './components/AIGeneratorModal';
 import { SlotScheduler } from './components/SlotScheduler';
 import { StabilityBrakes } from './components/StabilityBrakes';
+import { BeginnerGuideModal } from './components/BeginnerGuideModal';
 import { Milestone, SheetRecord, Domain, MirrorEntry } from './types';
 import { getAll1000Milestones, getMilestoneById, mutateMilestone } from './data/generatorEngine';
 import { DOMAINS } from './data/domains';
@@ -103,6 +104,27 @@ export default function App() {
   const [aiGeneratorDomain, setAiGeneratorDomain] = useState<Domain | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [extremeFilter, setExtremeFilter] = useState<'normal' | 'exam' | 'no_money' | 'rain'>('normal');
+  const [beginnerGuideOpen, setBeginnerGuideOpen] = useState(false);
+  const [isSimpleMode, setIsSimpleMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('saigon_simple_mode_v1');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSimpleMode = () => {
+    setIsSimpleMode(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('saigon_simple_mode_v1', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   // Show why modal on first visit
   useEffect(() => {
@@ -300,6 +322,9 @@ export default function App() {
         onOpenMirror={() => setMirrorModalOpen(true)}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
+        isSimpleMode={isSimpleMode}
+        onToggleSimpleMode={handleToggleSimpleMode}
+        onOpenBeginnerGuide={() => setBeginnerGuideOpen(true)}
       />
 
       {/* Main Content View */}
@@ -320,6 +345,8 @@ export default function App() {
             onNavigateToStability={() => setActiveTab('stability')}
             extremeFilter={extremeFilter}
             onSetExtremeFilter={setExtremeFilter}
+            isSimpleMode={isSimpleMode}
+            onOpenBeginnerGuide={() => setBeginnerGuideOpen(true)}
           />
         )}
 
@@ -455,6 +482,16 @@ export default function App() {
         onClose={() => setAiGeneratorDomain(null)}
         initialDomain={aiGeneratorDomain}
         onAddCustomMilestones={handleAddCustomMilestones}
+      />
+
+      <BeginnerGuideModal
+        isOpen={beginnerGuideOpen}
+        onClose={() => setBeginnerGuideOpen(false)}
+        isSimpleMode={isSimpleMode}
+        onToggleSimpleMode={handleToggleSimpleMode}
+        onStartRoll={() => {
+          setActiveTab('gacha');
+        }}
       />
     </div>
   );
